@@ -1,7 +1,8 @@
 const express = require('express');
 const app = express();
 const userRoute = require('./routes/user.route');
-
+const path = require('path');
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // for parsing multipart/form-data (file data)
 // const multer = require('multer');
@@ -11,7 +12,7 @@ const userRoute = require('./routes/user.route');
 app.use(express.json());
 
 // for parsing application/x-www-form-urlencoded (form data)
-app.use(express.urlencoded({ extended: true }));
+// app.use(express.urlencoded({ extended: true }));
 
 
 

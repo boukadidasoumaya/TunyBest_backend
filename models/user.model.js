@@ -7,25 +7,40 @@ require('dotenv').config();
 let privateKey = process.env.PRIVATE_KEY;
 
 const schemaValidation = joi.object({
-    firstname: joi.string().min(2).max(30).alphanum().required(),
-    lastname: joi.string().min(2).max(30).alphanum().required(),
-    // email: joi.string().email({ maxDomainSegments: 2, tlds: {allow: ['com','net','tn','org', 'edu']} }).required(),
-    email: joi.string().email({maxDomainSegments: 2, tlds: {allow: true}}).required(),
-    password: joi.string().min(6).max(30).required(),
+    firstname: joi.string().min(2).max(30).alphanum().required()
+        .messages({
+            'string.base': 'firstname must be a string',
+            'string.empty': 'firstname is required',
+            'string.min': 'firstname must have at least {#limit} characters',
+            'string.max': 'firstname must have at most {#limit} characters',
+            'any.required': 'firstname is required',
+            'string.alphanum': 'firstname must only contain alphanumeric characters',
+        }),
+    lastname: joi.string().min(2).max(30).alphanum().required()
+        .messages({
+            'string.base': 'lastname must be a string',
+            'string.empty': 'lastname is required',
+            'string.min': 'lastname must have at least {#limit} characters',
+            'string.max': 'lastname must have at most {#limit} characters',
+            'any.required': 'lastname is required',
+            'string.alphanum': 'lastname must only contain alphanumeric characters',
+        }),
+    email: joi.string().email().required()
+        .messages({
+            'string.base': 'email must be a valid email address',
+            'string.empty': 'email is required',
+            'string.email': 'email must be a valid email address',
+            'any.required': 'email is required',
+        }),
+    password: joi.string().min(6).max(30).required()
+        .messages({
+            'string.base': 'password must be a string',
+            'string.empty': 'password is required',
+            'string.min': 'password must have at least {#limit} characters',
+            'string.max': 'password must have at most {#limit} characters',
+            'any.required': 'password is required',
+        }),
 });
-
-
-exports.getAllUsers = () => {
-    return new Promise((resolve, reject) => {
-        connection.query('SELECT * FROM user',
-            (err, results) => {
-                if (err) {
-                    reject(err);
-                }
-                resolve(results);
-            });
-    });
-}
 
 
 exports.register = (
@@ -42,11 +57,11 @@ exports.register = (
             [email],
             async (err, results) => {
                 if (err) {
-                    reject(err);
+                    reject('Internal Server Error');
                     return;
                 }
                 if (results.length > 0) {
-                    reject('Email already exists');
+                    reject('Email already exists' );
                     return;
                 }
                 try {
@@ -56,21 +71,22 @@ exports.register = (
                         lastname,
                         email,
                         password
-                    });
+                    }, { abortEarly: false });
                     if (validation.error) {
-                        reject(validation.error.details[0].message);
+                        const errorMessages = validation.error.details.map((err) => err.message);
+                        reject(errorMessages);
                         return;
                     }
                     connection.query(`INSERT INTO user (firstname,lastname,email,password,image,country,birthdate) 
                         VALUES (?,?,?,?,?,?,?)`,
                         [firstname, lastname, email, hash, image, country, birthdate], (err, results) => {
                             if (err) {
-                                reject(err);
+                                reject('Internal Server Error');
                             }
                             resolve(results);
                         });
                 } catch (error) {
-                    reject(error.message);
+                    reject(error.details);
                 }
             });
     });
@@ -85,17 +101,17 @@ exports.login = (email, password) => {
             [email],
             (err, results) => {
                 if (err) {
-                    reject(err);
+                    return reject('Internal Server Error');
                 }
                 if (results.length > 0) {
                     bcrypt.compare(password, results[0].password, (err, result) => {
                         if (err) {
-                            reject(err);
+                            return reject('Internal Server Error');
                         }
                         if (result) {
                             const token = jwt.sign({
                                 email: results[0].email,
-                                userId: results[0].id
+                                userId: results[0].id,
 
                             }, privateKey, {
                                 expiresIn: '1h'
@@ -103,16 +119,42 @@ exports.login = (email, password) => {
                             // The "Bearer" scheme is a standardized way to indicate that the token is being used for bearer authentication.
                             // It provides clear semantics and helps distinguish authentication tokens from other types of tokens.
                             const bearerToken = `Bearer ${token}`;
-                            resolve(bearerToken);
+                            resolve({user: results[0], token: bearerToken});
                         } else {
-                            reject('Wrong password');
+                            reject({ code: 400, message: 'Wrong password' });
                         }
                     });
 
                 } else {
-                    reject('Email not found');
+                    reject({ code: 400, message: 'Email not found' });
                 }
             });
     })
 }
 
+
+
+exports.getAllUsers = () => {
+    return new Promise((resolve, reject) => {
+        connection.query('SELECT * FROM user',
+            (err, results) => {
+                if (err) {
+                    reject(err);
+                }
+                resolve(results);
+            });
+    });
+}
+
+exports.getUserById = (id) => {
+    return new Promise((resolve, reject) => {
+        connection.query('SELECT * FROM user WHERE id = ?',
+            [id],
+            (err, results) => {
+                if (err) {
+                    reject(err);
+                }
+                resolve(results);
+            });
+    });
+}
