@@ -47,7 +47,7 @@ route.post('/register',upload.single('image'), (req, res) => {
             country,
             birthdate
         ).then((results) => {
-            res.status(200).json({results, msg: 'user added'});
+            res.status(201).json({results, msg: 'user added'});
         })
             .catch((err) => {
                 if(err === 'Email already exists'){

@@ -132,8 +132,6 @@ exports.login = (email, password) => {
     })
 }
 
-
-
 exports.getAllUsers = () => {
     return new Promise((resolve, reject) => {
         connection.query('SELECT * FROM user',
