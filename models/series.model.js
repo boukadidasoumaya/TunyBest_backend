@@ -5,7 +5,7 @@ exports.getAllSeries = () => {
   return new Promise((resolve, reject) => {
     connection.query(`SELECT * FROM series`, (err, result) => {
       if (err) {
-        reject("erreeuurr");
+        reject("erreeurr");
       } else {
         resolve(result);
       }
