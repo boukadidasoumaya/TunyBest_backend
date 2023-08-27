@@ -32,7 +32,7 @@ app.use((req, res, next) => {
 
 
 
-app.use('/',userRoute);
+app.use('/user',userRoute);
 app.use('/',authRoute);
 
 app.listen(5000, () => {

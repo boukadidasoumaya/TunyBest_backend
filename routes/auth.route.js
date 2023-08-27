@@ -1,4 +1,5 @@
 const authModel = require("../models/auth.model");
+const userModel = require("../models/user.model");
 const route = require('express').Router();
 const multer = require('multer');
 const {verifyRefreshToken, generateAccessToken} = require("../utils/token.verification");
@@ -70,7 +71,7 @@ route.delete('/logout', (req, res) => {
 
 route.post('/refresh', verifyRefreshToken, (req, res) => {
     const userId = req.refreshTokenData.userId;
-    authModel.getUserById(userId)
+    userModel.getUserById(userId)
         .then((results) => {
             const user = results[0];
             const token = generateAccessToken(user);
