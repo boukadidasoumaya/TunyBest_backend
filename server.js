@@ -2,6 +2,13 @@ const express = require('express');
 const app = express();
 const userRoute = require('./routes/user.route');
 const path = require('path');
+const seriesRoute = require('./routes/series.route')
+const moviesRoute=require('./routes/movies.route')
+const homeRoute =require('./routes/home.route')
+
+
+
+
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // for parsing multipart/form-data (file data)
@@ -28,9 +35,17 @@ app.use((req, res, next) => {
 
 
 app.use('/',userRoute);
+
+app.use('/',homeRoute);
 // app.get('/', (req, res) => {
 //     res.send('Hello World!');
 // });
+
+
+app.use('/series',seriesRoute);
+app.use('/movies',moviesRoute);
+
+
 
 app.listen(5000, () => {
     console.log('Server started!');

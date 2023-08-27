@@ -79,15 +79,7 @@ route.post('/login', (req, res) => {
 });
 
 
-route.get('/', verifyToken, (req, res) => {
-    userModel.getAllUsers()
-        .then((results) => {
-            res.json({userId: req.tokenData.userId, results});
-        })
-        .catch((err) => {
-            console.log(err);
-        });
-});
+
 
 route.get('/authUser', verifyToken, (req, res) => {
     const userId = req.tokenData.userId;
