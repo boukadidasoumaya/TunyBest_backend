@@ -1,4 +1,4 @@
-const userModel = require("../models/user.model");
+const authModel = require("../models/auth.model");
 const route = require('express').Router();
 const multer = require('multer');
 const {verifyRefreshToken, generateAccessToken} = require("../utils/token.verification");
@@ -17,7 +17,7 @@ route.post('/register',upload.single('image'), (req, res) => {
         console.log(req.body);
         const {firstname, lastname, email, password, country, birthdate} = req.body;
         const image = req.file ? req.file.filename : '';
-        userModel.register(
+        authModel.register(
             firstname,
             lastname,
             email,
@@ -42,7 +42,7 @@ route.post('/register',upload.single('image'), (req, res) => {
 
 route.post('/login', (req, res) => {
     const {email, password} = req.body;
-    userModel.login(email, password)
+    authModel.login(email, password)
         .then((results) => {
             res.cookie('refreshToken', results.refreshToken,{
                 httpOnly: true,
@@ -70,7 +70,7 @@ route.delete('/logout', (req, res) => {
 
 route.post('/refresh', verifyRefreshToken, (req, res) => {
     const userId = req.refreshTokenData.userId;
-    userModel.getUserById(userId)
+    authModel.getUserById(userId)
         .then((results) => {
             const user = results[0];
             const token = generateAccessToken(user);
@@ -83,4 +83,5 @@ route.post('/refresh', verifyRefreshToken, (req, res) => {
         console.log(err);
     });
 });
+
 module.exports = route;
