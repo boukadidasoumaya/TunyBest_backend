@@ -5,7 +5,7 @@ const connection = require('../db');
 require('dotenv').config();
 
 let privateKey = process.env.PRIVATE_KEY;
-
+let refreshPrivateKey = process.env.REFRESH_PRIVATE_KEY;
 const schemaValidation = joi.object({
     firstname: joi.string().min(2).max(30).alphanum().required()
         .messages({
@@ -93,8 +93,6 @@ exports.register = (
 };
 
 
-
-
 exports.login = (email, password) => {
     return new Promise((resolve, reject) => {
         connection.query('SELECT * FROM user WHERE email = ?',
@@ -109,17 +107,19 @@ exports.login = (email, password) => {
                             return reject('Internal Server Error');
                         }
                         if (result) {
+                            const refreshToken = jwt.sign({
+                                userId: results[0].id
+                            }, refreshPrivateKey);
                             const token = jwt.sign({
                                 email: results[0].email,
                                 userId: results[0].id,
-
                             }, privateKey, {
-                                expiresIn: '1h'
+                                expiresIn: '30s'
                             });
                             // The "Bearer" scheme is a standardized way to indicate that the token is being used for bearer authentication.
                             // It provides clear semantics and helps distinguish authentication tokens from other types of tokens.
                             const bearerToken = `Bearer ${token}`;
-                            resolve({user: results[0], token: bearerToken});
+                            resolve({user: results[0], token: bearerToken, refreshToken: refreshToken});
                         } else {
                             reject({ code: 400, message: 'Wrong password' });
                         }
