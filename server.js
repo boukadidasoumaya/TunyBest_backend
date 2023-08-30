@@ -40,7 +40,6 @@ app.use((req, res, next) => {
 
 
 
-app.use('/',userRoute);
 
 app.use('/',homeRoute);
 // app.get('/', (req, res) => {
@@ -48,7 +47,7 @@ app.use('/',homeRoute);
 // });
 app.use('/',authRoute);
 
-
+app.use('/user',userRoute);
 app.use('/series',seriesRoute);
 app.use('/movies',moviesRoute);
 

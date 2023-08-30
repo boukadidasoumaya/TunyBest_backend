@@ -45,3 +45,4 @@ exports.generateAccessToken = (user) => {
         expiresIn: '30s'
     });
 }
+
