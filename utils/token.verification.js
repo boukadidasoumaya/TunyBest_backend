@@ -14,7 +14,6 @@ exports.verifyToken = (req, res, next) => {
     jwt.verify(token, privateKey, (err, decoded) => {
         if (err) {
             res.status(401).json({err, msg: "Unauthorized!"});
-
         }
         req.tokenData = decoded;
         next();

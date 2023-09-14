@@ -1,17 +1,35 @@
 const connection = require("../db");
+const categoryModel = require("./category.model");
+const actorModel = require("./actor.model");
 require("dotenv").config();
 
 exports.getAllSeries = () => {
   return new Promise((resolve, reject) => {
     connection.query(`SELECT * FROM series`, (err, result) => {
       if (err) {
-        reject("erreeurr");
+        reject(err);
       } else {
         resolve(result);
       }
     });
   });
 };
+
+
+exports.getSeasons = (serieId) => {
+    return new Promise((resolve, reject) => {
+        connection.query(`SELECT season_number, nb_episodes FROM seasons WHERE serie_id = ? 
+            AND season_number <= (SELECT nbseason FROM series WHERE id = ?)`,
+                        [serieId,serieId], (err, result) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(result);
+                }
+            })
+    })
+}
+
 
 exports.getOneSerie = (id) => {
   return new Promise((resolve, reject) => {
@@ -22,7 +40,24 @@ exports.getOneSerie = (id) => {
         if (err) {
           reject(err);
         } else {
-          resolve(result);
+            categoryModel.getCategoriesByMedia(id, "series")
+                .then((categories) => {
+                    result[0].categories = categories;
+                }).catch((err) => {
+                reject(err);
+            });
+            this.getSeasons(id).then((seasons) => {
+                result[0].seasons = seasons;
+            }).catch((err) => {
+                reject(err);
+            });
+            actorModel.getActorByMedia(id, "series")
+                .then((actors) => {
+                    result[0].actors = actors;
+                    resolve(result[0]);
+                }).catch((err) => {
+                reject(err);
+            })
         }
       }
     );

@@ -1,4 +1,6 @@
 const connection = require("../db");
+const categoryModel = require("./category.model");
+const actorModel = require("./actor.model");
 require("dotenv").config();
 
 
@@ -6,7 +8,7 @@ exports.getAllMovies = () => {
   return new Promise((resolve, reject) => {
     connection.query(`SELECT * FROM movies`, (err, result) => {
       if (err) {
-        reject('erreeuurr');
+        reject(err);
       } else {
         resolve(result);
       }
@@ -23,7 +25,20 @@ exports.getOneMovie = (id) => {
         if (err) {
           reject(err);
         } else {
-          resolve(result);
+            categoryModel.getCategoriesByMedia(id, "movies")
+            .then((categories) => {
+                result[0].categories = categories;
+                resolve(result[0]);
+            }).catch((err) => {
+                reject(err);
+            });
+            actorModel.getActorByMedia(id, "movies")
+                .then((actors) => {
+                    result[0].actors = actors;
+                    resolve(result[0]);
+                }).catch((err) => {
+                reject(err);
+            })
         }
       }
     );

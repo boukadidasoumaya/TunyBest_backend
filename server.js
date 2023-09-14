@@ -6,7 +6,9 @@ const path = require('path');
 const seriesRoute = require('./routes/series.route')
 const moviesRoute=require('./routes/movies.route')
 const homeRoute =require('./routes/home.route')
-
+const commentRoute = require('./routes/comment.route');
+const categoryRoute = require('./routes/category.route');
+const ratingRoute = require('./routes/rating.route');
 
 
 const cookieParser = require('cookie-parser');
@@ -38,19 +40,14 @@ app.use((req, res, next) => {
 
 
 
-app.use('/user',userRoute);
-
 app.use('/',homeRoute);
-// app.get('/', (req, res) => {
-//     res.send('Hello World!');
-// });
 app.use('/',authRoute);
-
-
+app.use('/user',userRoute);
 app.use('/series',seriesRoute);
 app.use('/movies',moviesRoute);
-
-
+app.use('/comment', commentRoute);
+app.use('/category', categoryRoute);
+app.use('/rating', ratingRoute);
 
 app.listen(5000, () => {
     console.log('Server started!');
