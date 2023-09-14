@@ -3,15 +3,28 @@ require("dotenv").config();
 
 exports.getAllSeries = () => {
   return new Promise((resolve, reject) => {
-    connection.query(`SELECT * FROM series`, (err, result) => {
+    connection.query(`
+      SELECT s.*, GROUP_CONCAT(cn.name) AS categoryNames
+      FROM series AS s
+      LEFT JOIN categories AS c ON s.id = c.serie_id
+      LEFT JOIN categoryname AS cn ON c.category_id = cn.id
+      GROUP BY s.id
+      ORDER BY s.rating DESC, s.year DESC
+      LIMIT 10
+    `, (err, result) => {
       if (err) {
-        reject("erreeurr");
+        reject('erreeuurr');
       } else {
-        resolve(result);
+        const seriesWithCategories = result.map(serie => ({
+          ...serie,
+          categories: serie.categoryNames ? serie.categoryNames.split(',') : []
+        }));
+        resolve(seriesWithCategories);
       }
     });
   });
-};
+}
+
 
 exports.getOneSerie = (id) => {
   return new Promise((resolve, reject) => {

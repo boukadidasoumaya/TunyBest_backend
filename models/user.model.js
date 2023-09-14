@@ -158,3 +158,22 @@ exports.updatePasswordUser = (id, ActualPassword, password) => {
     );
   });
 };
+exports.getMyListUser = (id) => {
+  return new Promise((resolve, reject) => {
+    connection.query(
+      `SELECT ml.id, ml.media_type, m.title AS movie_title, s.title AS series_title
+    FROM mylist ml
+    LEFT JOIN movies m ON ml.movie_id = m.id
+    LEFT JOIN series s ON ml.serie_id = s.id
+    WHERE ml.user_id = ?`,
+      [id],
+      (err, results) => {
+        if (err) {
+          console("errue inside get")
+          reject(err);
+        }
+        resolve(results);
+      }
+    );
+  });
+};

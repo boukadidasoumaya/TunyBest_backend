@@ -72,4 +72,16 @@ route.post("/update/email",(req,res)=>{
   })
 })
 
+route.get("/mylist/:id", (req, res) => {
+
+  userModel
+    .getMyListUser(req.params.id)
+    .then((results) => {
+      res.json(results);
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+});
+
 module.exports = route;

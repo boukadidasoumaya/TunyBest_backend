@@ -1,18 +1,31 @@
 const connection = require("../db");
 require("dotenv").config();
+const getCategoriesByMedia=require("../models/home.model")
 
-
-exports.getAllMovies = () => {  
+exports.getAllMovies = () => {
   return new Promise((resolve, reject) => {
-    connection.query(`SELECT * FROM movies`, (err, result) => {
+    connection.query(`
+      SELECT m.*, GROUP_CONCAT(cn.name) AS categoryNames
+      FROM movies AS m
+      LEFT JOIN categories AS c ON m.id = c.movie_id
+      LEFT JOIN categoryname AS cn ON c.category_id = cn.id
+      GROUP BY m.id
+      ORDER BY m.rating DESC, m.year DESC
+      LIMIT 10
+    `, (err, result) => {
       if (err) {
         reject('erreeuurr');
       } else {
-        resolve(result);
+        const moviesWithCategories = result.map(movie => ({
+          ...movie,
+          categories: movie.categoryNames ? movie.categoryNames.split(',') : []
+        }));
+        resolve(moviesWithCategories);
       }
     });
   });
 }
+
 
 exports.getOneMovie = (id) => {
   return new Promise((resolve, reject) => {
