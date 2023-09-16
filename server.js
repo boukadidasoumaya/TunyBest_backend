@@ -11,6 +11,8 @@ const categoryRoute = require('./routes/category.route');
 const ratingRoute = require('./routes/rating.route');
 
 
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 const cookieParser = require('cookie-parser');
 
 // for parsing cookies
