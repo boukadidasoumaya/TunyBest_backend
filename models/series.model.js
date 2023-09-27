@@ -1,18 +1,18 @@
 const connection = require("../db");
 const categoryModel = require("./category.model");
+const userModel = require("./user.model");
 const actorModel = require("./actor.model");
 require("dotenv").config();
 
 exports.getAllSeries = () => {
   return new Promise((resolve, reject) => {
     connection.query(`
-      SELECT s.*, GROUP_CONCAT(cn.name) AS categoryNames
+      SELECT s.*, GROUP_CONCAT(cn.name) AS categoryNames, 'series' AS type
       FROM series AS s
       LEFT JOIN categories AS c ON s.id = c.serie_id
       LEFT JOIN categoryname AS cn ON c.category_id = cn.id
       GROUP BY s.id
       ORDER BY s.rating DESC, s.year DESC
-      LIMIT 10
     `, (err, result) => {
       if (err) {
         reject(err);
@@ -43,38 +43,40 @@ exports.getSeasons = (serieId) => {
 }
 
 
-exports.getOneSerie = (id) => {
-  return new Promise((resolve, reject) => {
-    connection.query(
-      `SELECT * FROM series WHERE id = ?`,
-      [id],
-      (err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-            categoryModel.getCategoriesByMedia(id, "series")
-                .then((categories) => {
-                    result[0].categories = categories;
-                }).catch((err) => {
-                reject(err);
+exports.getOneSerie = async (id, userId) => {
+    try {
+        const result = await new Promise((resolve, reject) => {
+            connection.query(`SELECT * FROM series WHERE id = ?`, [id], (err, result) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(result);
+                }
             });
-            this.getSeasons(id).then((seasons) => {
-                result[0].seasons = seasons;
-            }).catch((err) => {
-                reject(err);
-            });
-            actorModel.getActorByMedia(id, "series")
-                .then((actors) => {
-                    result[0].actors = actors;
-                    resolve(result[0]);
-                }).catch((err) => {
-                reject(err);
-            })
+        });
+
+        // Get categories
+        result[0].categories = await categoryModel.getCategoriesByMedia(id, "series");
+
+        // Get seasons
+        result[0].seasons = await this.getSeasons(id);
+
+        // Get actors
+        result[0].actors = await actorModel.getActorByMedia(id, "series");
+
+        // Check if it's in the user's list
+        const results = await userModel.isFromMyList(userId, "series", id);
+
+        if (results.length > 0) {
+            result[0].isFromMyList = results[0];
         }
-      }
-    );
-  });
+
+        return result[0];
+    } catch (err) {
+        throw err;
+    }
 };
+
 
 exports.createSerie = (obj) => {
   const {

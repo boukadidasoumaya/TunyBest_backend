@@ -117,7 +117,7 @@ exports.getRatingPercentagesPerMedia = (mediaId, mediaType) => {
                     result.forEach((row) => {
                         const rating = row.rating;
                         const count = row.count;
-                        ratingPercentages[10 - ratinggit add .] = ((count / totalRatings) * 100).toFixed(2);
+                        ratingPercentages[10 - rating] = ((count / totalRatings) * 100).toFixed(2);
                     });
 
                     resolve(ratingPercentages);

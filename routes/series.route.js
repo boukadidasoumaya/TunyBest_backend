@@ -11,10 +11,11 @@ route.get("/", (req, res) => {
     });
 });
 
-route.get("/:id", (req, res) => {
-  const { id } = req.params;
+route.get("/:id/:userId", (req, res) => {
+  const { id, userId } = req.params;
+
   seriesModel
-    .getOneSerie(id)
+    .getOneSerie(id,userId)
     .then((result) => {
       res.status(200).json(result);
     })

@@ -161,15 +161,31 @@ exports.updatePasswordUser = (id, ActualPassword, password) => {
 exports.getMyListUser = (id) => {
   return new Promise((resolve, reject) => {
     connection.query(
-      `SELECT ml.id, ml.media_type, m.title AS movie_title, s.title AS series_title
-    FROM mylist ml
-    LEFT JOIN movies m ON ml.movie_id = m.id
-    LEFT JOIN series s ON ml.serie_id = s.id
-    WHERE ml.user_id = ?`,
+      `SELECT
+  ml.id,
+  ml.media_type as type,
+  CASE
+    WHEN ml.media_type = 'movies' THEN m.title
+    ELSE s.title
+  END AS title,
+  CASE
+    WHEN ml.media_type = 'movies' THEN m.littleimage
+    ELSE s.littleimage
+  END AS littleimage,
+  CASE
+    WHEN ml.media_type = 'movies' THEN m.id
+    ELSE s.id
+  END AS media_id
+FROM mylist ml
+LEFT JOIN movies m ON ml.movie_id = m.id
+LEFT JOIN series s ON ml.serie_id = s.id
+WHERE ml.user_id = ? 
+AND ml.deleted_at IS NULL;
+`,
       [id],
       (err, results) => {
         if (err) {
-          console("errue inside get")
+          console.log("errue inside get")
           reject(err);
         }
         resolve(results);
@@ -177,3 +193,45 @@ exports.getMyListUser = (id) => {
     );
   });
 };
+
+exports.addToMyListUser = (userId, mediaType, mediaId) => {
+    console.log("inside add to list", mediaType)
+    const media_id = mediaType === "movies" ? "movie_id" : "serie_id";
+    return new Promise((resolve, reject) => {
+        connection.query(`INSERT INTO mylist (user_id, media_type, ${media_id}) VALUES (?, ?, ?)`, [userId, mediaType, mediaId], (err, results) => {
+            if (err) {
+                reject(err);
+            }
+            connection.query(`SELECT * FROM mylist WHERE id = ?`, [results.insertId], (err, results) => {
+                if (err) {
+                    reject(err);
+                }
+                resolve(results[0]);
+            })
+        })
+    })
+};
+
+exports.deleteFromMyListUser = (id) => {
+    const date = new Date();
+    return new Promise ((resolve, reject) => {
+        connection.query(`UPDATE mylist set deleted_at = ? WHERE id = ?`, [date, id], (err, results) => {
+            if (err) {
+                reject(err);
+            }
+            resolve(results);
+        })
+    })
+}
+
+exports.isFromMyList = (userId, mediaType, mediaId) => {
+    const media_id = mediaType === "movies" ? "movie_id" : "serie_id";
+    return new Promise((resolve, reject) => {
+        connection.query(`SELECT * FROM mylist WHERE user_id = ? AND media_type = ? AND ${media_id} = ? AND deleted_at is NULL  `, [userId, mediaType, mediaId], (err, results) => {
+            if (err) {
+                reject(err);
+            }
+            resolve(results);
+        })
+    })
+}

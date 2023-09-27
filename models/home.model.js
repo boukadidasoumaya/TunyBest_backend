@@ -1,4 +1,6 @@
 const connection = require("../db");
+const movieModel = require("./movies.model");
+const seriesModel = require("./series.model");
 require("dotenv").config();
 
 
@@ -19,14 +21,14 @@ exports.getAllRandomMedia = () => {
   return new Promise((resolve, reject) => {
     connection.query(
       `SELECT * FROM (
-      SELECT 'movie' AS type, title, bigimage, littleimage, description, rating, year, trailer, country, language, creator, runningtime
+      SELECT 'movies' AS type,id, title, bigimage, littleimage, description, rating, year, trailer, country, language, creator, runningtime
       FROM movies
       ORDER BY rating DESC
       LIMIT 5
   ) AS top_movies
   UNION ALL
   SELECT * FROM (
-      SELECT 'series' AS type, title, bigimage, littleimage, description, rating, year, trailer, country, language, creator, runningtime
+      SELECT 'series' AS type,id, title, bigimage, littleimage, description, rating, year, trailer, country, language, creator, runningtime
       FROM series
       ORDER BY rating DESC
       LIMIT 5
@@ -35,7 +37,7 @@ exports.getAllRandomMedia = () => {
   `,
       (err, result) => {
         if (err) {
-          reject("erreerr");
+          reject("erreur");
         } else {
           resolve(result);
         }
@@ -49,7 +51,7 @@ exports.getAllRandomMediaTrending = async () => {
       new Promise((resolve, reject) => {
         connection.query(
           `
-          SELECT id, 'movie' AS type, title, bigimage, littleimage, rating, year, runningtime, releasedate
+          SELECT id, 'movies' AS type, title, bigimage, littleimage, rating, year, runningtime, releasedate
           FROM movies
           ORDER BY rating DESC, releasedate DESC
           LIMIT 10;
@@ -111,7 +113,7 @@ exports.getAllRandomMediaPopular = async () => {
       new Promise((resolve, reject) => {
         connection.query(
           `
-          SELECT id, 'movie' AS type, title, bigimage, littleimage, description, rating, year, trailer, country, language, creator, runningtime
+          SELECT id, 'movies' AS type, title, bigimage, littleimage, description, rating, year, trailer, country, language, creator, runningtime
           FROM movies
           ORDER BY rating DESC
           LIMIT 10;
@@ -171,7 +173,7 @@ exports.getAllRandomMediaAnime = async () => {
       new Promise((resolve, reject) => {
         connection.query(
           `
-          SELECT id, 'movie' AS type, title, bigimage, littleimage, rating, year, runningtime, releasedate
+          SELECT id, 'movies' AS type, title, bigimage, littleimage, rating, year, runningtime, releasedate
           FROM movies
           WHERE id IN (
             SELECT movie_id FROM categories WHERE category_id = (
@@ -241,7 +243,7 @@ exports.getAllRandomKDrama = async () => {
       new Promise((resolve, reject) => {
         connection.query(
           `
-          SELECT id, 'movie' AS type, title, bigimage, littleimage, rating, year, runningtime, releasedate
+          SELECT id, 'movies' AS type, title, bigimage, littleimage, rating, year, runningtime, releasedate
           FROM movies
           WHERE id IN (
             SELECT movie_id FROM categories WHERE category_id = (
@@ -312,9 +314,10 @@ exports.getAllNewMovies  = async () => {
       new Promise((resolve, reject) => {
         connection.query(
           `
-          SELECT id, 'movie' AS type, title, bigimage, littleimage, description, rating, year, trailer, country, language, creator, runningtime
+          SELECT id, 'movies' AS type, title, bigimage, littleimage, description, rating, year, trailer, country, language, creator, runningtime
           FROM movies
           ORDER BY releasedate DESC
+          
           LIMIT 10;
           `,
           (err, result) => {

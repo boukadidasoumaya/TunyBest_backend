@@ -10,10 +10,10 @@ route.get("/", (req, res) => {
       res.status(500).json(err);
     });
 });
-route.get("/:id", (req, res) => {
-  const { id } = req.params;
+route.get("/:id/:userId", (req, res) => {
+  const { id, userId } = req.params;
   moviesModel
-    .getOneMovie(id)
+    .getOneMovie(id,userId)
     .then((result) => {
       res.status(200).json(result);
     })

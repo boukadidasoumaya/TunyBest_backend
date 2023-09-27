@@ -77,11 +77,32 @@ route.get("/mylist/:id", (req, res) => {
   userModel
     .getMyListUser(req.params.id)
     .then((results) => {
-      res.json(results);
+      res.status(200).json(results);
     })
     .catch((err) => {
       console.log(err);
     });
+});
+
+route.post("/mylist/delete/:id", (req, res) => {
+userModel.deleteFromMyListUser(req.params.id)
+.then((results) => {
+  res.status(200).json(results);
+})
+.catch((err) => {
+    console.log(err);
+});
+});
+
+route.post("/mylist/add", (req, res) => {
+  const {userId, mediaType, mediaId} = req.body;
+userModel.addToMyListUser(userId, mediaType, mediaId)
+.then((results) => {
+  res.status(200).json(results);
+})
+.catch((err) => {
+    console.log(err);
+});
 });
 
 module.exports = route;
