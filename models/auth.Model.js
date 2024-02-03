@@ -117,7 +117,7 @@ exports.login = (email, password) => {
                                 email: results[0].email,
                                 userId: results[0].id,
                             }, privateKey, {
-                                expiresIn: '30s'
+                                expiresIn: '900s'
                             });
                             // The "Bearer" scheme is a standardized way to indicate that the token is being used for bearer authentication.
                             // It provides clear semantics and helps distinguish authentication tokens from other types of tokens.
